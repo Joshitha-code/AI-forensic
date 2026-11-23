@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Forensic Investigation Assistant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 { color: #667eea; margin-bottom: 10px; }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-success:hover { background: #38a169; }
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-success { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
+        .alert-error { background: #fed7d7; color: #742a2a; border: 1px solid #fc8181; }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .metric-label { font-weight: 600; color: #666; }
+        .metric-value { color: #667eea; font-weight: 700; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value { font-size: 32px; font-weight: 700; }
+        .stat-label { font-size: 14px; opacity: 0.9; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th { background: #f7fafc; font-weight: 600; }
+        tr:hover { background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 AI Forensic Investigation</h1>
+            <p>Evidence Path Search System</p>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div class="panel">
+            <h2 style="margin-bottom: 20px;">📊 Dashboard</h2>
+            <div class="grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalEvents">0</div>
+                    <div class="stat-label">Total Events</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="suspiciousCount">0</div>
+                    <div class="stat-label">Suspicious</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalEdges">0</div>
+                    <div class="stat-label">Connections</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="uniqueDevices">0</div>
+                    <div class="stat-label">Devices</div>
+                </div>
+            </div>
+            <button class="btn btn-success" onclick="loadDataset()" style="margin-top: 20px; width: 100%;">📥 Load Dataset</button>
+        </div>
+
+        <!-- SEARCH SECTION -->
+        <div class="panel">
+            <h2 style="margin-bottom: 20px;">🔎 Search Evidence Paths</h2>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label>Start Event</label>
+                    <select id="startEventSelect">
+                        <option value="">Select starting event...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Goal Event</label>
+                    <select id="goalEventSelect">
+                        <option value="">Select goal event...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Algorithm</label>
+                    <select id="algorithmSelect">
+                        <option value="bfs">BFS (Breadth-First Search)</option>
+                        <option value="dfs">DFS (Depth-First Search)</option>
+                        <option value="ucs">UCS (Uniform Cost Search)</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="runSearch()" style="width: 100%;">🔍 Search Evidence Path</button>
+            </div>
+            <div id="searchResult"></div>
+        </div>
+
+        <!-- EVENTS TABLE -->
+        <div class="panel">
+            <h2 style="margin-bottom: 20px;">📋 Events</h2>
+            <div id="eventsTable" style="overflow-x: auto;"></div>
+        </div>
+
+        <!-- COMPARISON -->
+        <div class="panel">
+            <h2 style="margin-bottom: 20px;">⚙️ Algorithm Comparison</h2>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label>Start Event</label>
+                    <select id="compareStartSelect">
+                        <option value="">Select...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Goal Event</label>
+                    <select id="compareGoalSelect">
+                        <option value="">Select...</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="compareAlgorithms()" style="width: 100%;">⚙️ Run Comparison</button>
+            </div>
+            <div id="comparisonResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let allEvents = [];
+
+        async function loadDataset() {
+            try {
+                const response = await fetch('/api/load-dataset', { method: 'POST' });
+                const data = await response.json();
+                
+                allEvents = data.events || [];
+                
+                document.getElementById('totalEvents').textContent = data.total_events || 0;
+                document.getElementById('suspiciousCount').textContent = allEvents.filter(e => e.suspicious).length;
+                document.getElementById('totalEdges').textContent = data.total_edges || 0;
+                document.getElementById('uniqueDevices').textContent = new Set(allEvents.map(e => e.device)).size;
+                
+                displayEvents(allEvents);
+                populateSelects(allEvents);
+            } catch (error) {
+                console.error('Load dataset error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function displayEvents(events) {
+            if (!events || events.length === 0) {
+                document.getElementById('eventsTable').innerHTML = '<p>No events</p>';
+                return;
+            }
+            
+            let html = '<table><thead><tr><th>ID</th><th>User</th><th>Device</th><th>Activity</th><th>Time</th><th>Status</th></tr></thead><tbody>';
+            events.forEach(e => {
+                html += `<tr><td>${e.id}</td><td>${e.user}</td><td>${e.device}</td><td>${e.activity}</td><td>${new Date(e.timestamp).toLocaleString()}</td><td>${e.suspicious ? '⚠️' : '✅'}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('eventsTable').innerHTML = html;
+        }
+
+        function populateSelects(events) {
+            if (!events || events.length === 0) return;
+            
+            const options = events.map(e => `<option value="${e.id}">${e.id} - ${e.activity}</option>`).join('');
+            document.getElementById('startEventSelect').innerHTML = '<option value="">Select...</option>' + options;
+            document.getElementById('goalEventSelect').innerHTML = '<option value="">Select...</option>' + options;
+            document.getElementById('compareStartSelect').innerHTML = '<option value="">Select...</option>' + options;
+            document.getElementById('compareGoalSelect').innerHTML = '<option value="">Select...</option>' + options;
+        }
+
+        async function runSearch() {
+            const startId = document.getElementById('startEventSelect').value;
+            const goalId = document.getElementById('goalEventSelect').value;
+            const algorithm = document.getElementById('algorithmSelect').value;
+
+            if (!startId || !goalId) {
+                alert('Please select both events');
+                return;
+            }
+
+            const resultDiv = document.getElementById('searchResult');
+            resultDiv.innerHTML = '<p>Searching...</p>';
+
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ start_id: startId, goal_id: goalId, algorithm: algorithm })
+                });
+
+                const data = await response.json();
+                console.log('Response:', data);
+
+                if (data.error) {
+                    resultDiv.innerHTML = `<div class="alert alert-error">❌ Error: ${data.error}</div>`;
+                    return;
+                }
+
+                const pathDetails = data.path_details || [];
+                const found = data.found || false;
+
+                let html = `
+                    <div class="alert ${found ? 'alert-success' : 'alert-error'}">
+                        <span>${found ? '✅' : '❌'}</span>
+                        <strong>${found ? 'Path Found!' : 'No Path Found'}</strong>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                            <h3>📊 Metrics</h3>
+                            <div class="metric"><span class="metric-label">Algorithm</span><span class="metric-value">${(data.algorithm || '').toUpperCase()}</span></div>
+                            <div class="metric"><span class="metric-label">Path Length</span><span class="metric-value">${data.path_length || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Total Cost</span><span class="metric-value">${data.total_cost || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Explored Nodes</span><span class="metric-value">${data.explored_nodes || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Execution Time</span><span class="metric-value">${data.execution_time_ms || 0}ms</span></div>
+                        </div>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                            <h3>🔗 Evidence Path</h3>
+                            ${pathDetails && pathDetails.length > 0 ? pathDetails.map(e => `
+                                <div style="padding: 8px 0; border-bottom: 1px solid #ddd;">
+                                    <strong>${e.id}</strong> - ${e.activity}<br>
+                                    <small style="color: #888;">${e.user}@${e.device}</small>
+                                </div>
+                            `).join('') : '<p style="color: #999;">No path details</p>'}
+                        </div>
+                    </div>
+                `;
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                console.error('Search error:', error);
+                resultDiv.innerHTML = `<div class="alert alert-error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function compareAlgorithms() {
+            const startId = document.getElementById('compareStartSelect').value;
+            const goalId = document.getElementById('compareGoalSelect').value;
+
+            if (!startId || !goalId) {
+                alert('Please select both events');
+                return;
+            }
+
+            const resultDiv = document.getElementById('comparisonResult');
+            resultDiv.innerHTML = '<p>Running comparison...</p>';
+
+            try {
+                const response = await fetch('/api/compare-algorithms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ start_id: startId, goal_id: goalId })
+                });
+
+                const data = await response.json();
+                const comp = data.comparison || {};
+
+                resultDiv.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                            <h3>🔄 BFS</h3>
+                            <div class="metric"><span class="metric-label">Found</span><span class="metric-value">${comp.bfs?.found ? '✅' : '❌'}</span></div>
+                            <div class="metric"><span class="metric-label">Path Length</span><span class="metric-value">${comp.bfs?.path_length || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Cost</span><span class="metric-value">${comp.bfs?.total_cost || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Nodes</span><span class="metric-value">${comp.bfs?.explored_nodes || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Time</span><span class="metric-value">${comp.bfs?.execution_time_ms || 0}ms</span></div>
+                        </div>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                            <h3>🌳 DFS</h3>
+                            <div class="metric"><span class="metric-label">Found</span><span class="metric-value">${comp.dfs?.found ? '✅' : '❌'}</span></div>
+                            <div class="metric"><span class="metric-label">Path Length</span><span class="metric-value">${comp.dfs?.path_length || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Cost</span><span class="metric-value">${comp.dfs?.total_cost || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Nodes</span><span class="metric-value">${comp.dfs?.explored_nodes || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Time</span><span class="metric-value">${comp.dfs?.execution_time_ms || 0}ms</span></div>
+                        </div>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                            <h3>⚖️ UCS</h3>
+                            <div class="metric"><span class="metric-label">Found</span><span class="metric-value">${comp.ucs?.found ? '✅' : '❌'}</span></div>
+                            <div class="metric"><span class="metric-label">Path Length</span><span class="metric-value">${comp.ucs?.path_length || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Cost</span><span class="metric-value">${comp.ucs?.total_cost || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Nodes</span><span class="metric-value">${comp.ucs?.explored_nodes || 0}</span></div>
+                            <div class="metric"><span class="metric-label">Time</span><span class="metric-value">${comp.ucs?.execution_time_ms || 0}ms</span></div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Comparison error:', error);
+                resultDiv.innerHTML = `<div class="alert alert-error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        window.addEventListener('load', loadDataset);
+    </script>
+</body>
+</html>
